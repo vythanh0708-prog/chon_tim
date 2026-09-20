@@ -1,0 +1,192 @@
+:root { font-family: system-ui, sans-serif; background: #a9b8f3; color: #604a35; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; }
+button { font: inherit; }
+#root { min-height: 100vh; display: grid; place-items: center; overflow: hidden; }
+.screen { position: relative; width: min(100vw, calc(100vh * 1.333984375)); aspect-ratio: 1366 / 1024; overflow: hidden; background: #a9b8f3; }
+.screen-art { display: block; width: 100%; height: 100%; object-fit: fill; user-select: none; pointer-events: none; }
+.intro-hitarea { appearance: none; border: 0; padding: 0; width: 100%; height: 100%; background: transparent; cursor: pointer; }
+.home-object { position: absolute; z-index: 2; padding: 0; border: 0; background: transparent; cursor: pointer; border-radius: 50%; }
+.home-object img { display: block; width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; pointer-events: none; }
+.home-object:focus-visible, .intro-hitarea:focus-visible, .close-button:focus-visible, .reveal-button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.home-object:hover { filter: brightness(1.06); }
+.close-button { position: absolute; right: 87.8%; top: 8%; width: 5.1%; height: 7%; border: 0; padding: 0; border-radius: 50%; background: transparent; cursor: pointer; }
+.detail-screen .close-button { left: 87.8%; right: auto; top: 8%; }
+.reveal-button { position: absolute; left: 50%; bottom: 4.2%; transform: translateX(-50%); min-width: 19%; border: 2px solid #745638; border-radius: 999px; padding: .7% 2.5%; background: #fffdf5; box-shadow: 0 3px 0 rgba(79, 56, 34, .3); color: #604a35; font-size: clamp(10px, 1.35vw, 20px); font-weight: 700; cursor: pointer; white-space: nowrap; }
+.reveal-button:hover { transform: translateX(-50%) translateY(-1px); }
+.complete-home-hitarea { position: absolute; inset: 0; border: 0; background: transparent; cursor: pointer; }
+@media (max-aspect-ratio: 4/3) { .screen { width: 100vw; } }
+@media (max-width: 600px) { #root { display: block; } .screen { width: 100vw; margin-top: max(0px, calc((100vh - 75vw) / 2)); } .reveal-button { min-width: 28%; padding: 1.2% 3%; } }
+
+.object-art { position: absolute; inset: 0; display: block; width: 100%; height: 100%; background: transparent; pointer-events: none; user-select: none; }
+
+.next-journey-hitarea { position: absolute; left: 63%; top: 90.5%; width: 35%; height: 6%; border: 0; padding: 0; background: transparent; cursor: pointer; }
+.complete-home-hitarea:focus-visible, .next-journey-hitarea:focus-visible { outline: 3px solid #fff; outline-offset: -3px; }
+
+.uyen-journey-hitarea { position: absolute; left: 3%; top: 4%; width: 13%; height: 10%; border: 0; padding: 0; background: transparent; cursor: pointer; }
+.uyen-journey-hitarea:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+
+/* Interaction polish: quick, soft transitions without changing the artwork. */
+.screen { animation: screen-enter 240ms ease-out both; }
+@keyframes screen-enter {
+  from { opacity: 0; transform: scale(0.998); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Detail screens dissolve in a little more slowly for a softer story reveal. */
+.detail-screen { animation: detail-dissolve 300ms ease-in-out both; }
+@keyframes detail-dissolve {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.home-object { transition: filter 160ms ease, transform 160ms ease; }
+.home-object:hover { transform: scale(1.025); }
+.home-object:active { transform: scale(0.985); }
+
+/* Invisible hit area over the existing Chốn Tìm logo. No new visual is added. */
+.home-logo-hitarea {
+  position: absolute;
+  z-index: 8;
+  left: 2.2%;
+  top: 3%;
+  width: 15.5%;
+  height: 12%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.home-logo-hitarea:focus-visible { outline: 3px solid #fff; outline-offset: -3px; }
+
+/* The completion screen is clickable, but the logo must remain independently clickable. */
+.completed-screen .home-logo-hitarea { z-index: 10; }
+
+@media (prefers-reduced-motion: reduce) {
+  .screen { animation: none; }
+  .home-object { transition: none; }
+}
+
+/* Journey intro added before Uyên's object exploration. */
+.intro-continue-hitarea {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.journey-intro-screen .home-logo-hitarea { z-index: 10; }
+.intro-continue-hitarea:focus-visible { outline: 3px solid #fff; outline-offset: -3px; }
+
+/* Exact instruction artwork, separated from the PNG so it can gently pulse. */
+.instruction-motion {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+  animation: instruction-pulse 2s ease-in-out infinite;
+}
+@keyframes instruction-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .35; }
+}
+
+/* Intro → Journey: keep the landscape continuous and dissolve the journey in. */
+.intro-home-crossfade {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 600ms ease-in-out;
+  pointer-events: none;
+}
+.intro-home-crossfade.is-visible { opacity: 1; }
+.journey-intro-screen.is-transitioning .instruction-motion { opacity: 0; animation: none; transition: opacity 180ms ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .instruction-motion { animation: none; }
+  .intro-home-crossfade { transition: none; }
+}
+
+/* An journey: same interaction system as Uyên, with the supplied artwork kept intact. */
+.an-journey-hitarea {
+  position: absolute; right: 3%; top: 4%; width: 13%; height: 10%;
+  border: 0; padding: 0; background: transparent; cursor: pointer;
+}
+.an-journey-hitarea:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.revealed-object-art {
+  position: absolute; z-index: 1; height: auto; object-fit: contain;
+  background: transparent; pointer-events: none; user-select: none;
+}
+
+/* Như journey: exact supplied artwork, same interaction system. */
+.nhu-journey-hitarea {
+  position: absolute; left: 3%; bottom: 4%; width: 13%; height: 10%;
+  border: 0; padding: 0; background: transparent; cursor: pointer;
+}
+.nhu-journey-hitarea:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+/* Vy journey: exact supplied artwork, same interaction system. */
+.vy-journey-hitarea {
+  position: absolute; right: 3%; bottom: 4%; width: 13%; height: 10%;
+  border: 0; padding: 0; background: transparent; cursor: pointer;
+}
+.vy-journey-hitarea:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+
+/* Global screen transition: soft 300ms dissolve.
+   Both screens overlap during the transition, preventing flashes/jumps. */
+#root { position: relative; }
+#root > .screen { grid-area: 1 / 1; }
+.screen, .detail-screen { animation: none !important; transform: none !important; }
+.dissolve-in {
+  opacity: 0;
+  z-index: 20;
+  transition: opacity 300ms ease-in-out;
+  pointer-events: none;
+}
+.dissolve-in.is-visible { opacity: 1; }
+.dissolve-out {
+  opacity: 1;
+  z-index: 19;
+  transition: opacity 300ms ease-in-out;
+  pointer-events: none;
+}
+.dissolve-out.is-hidden { opacity: 0; }
+.intro-home-crossfade { transition: opacity 300ms ease-in-out !important; }
+@media (prefers-reduced-motion: reduce) {
+  .dissolve-in, .dissolve-out { transition-duration: 1ms; }
+}
+
+/* Restore the gentle pulse on the existing “Chạm…” instruction overlays.
+   Keep this independent from the 300ms screen dissolve. */
+.instruction-motion {
+  animation: instruction-pulse 2s ease-in-out infinite !important;
+  opacity: 1;
+}
+@keyframes instruction-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .35; }
+}
+
+/* Existing language controls on the main artwork. These are invisible hit areas only. */
+.vietnamese-language-hitarea,
+.english-language-hitarea {
+  position: absolute;
+  z-index: 9;
+  top: 52.5%;
+  height: 6.2%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.vietnamese-language-hitarea { left: 38.8%; width: 12.8%; }
+.english-language-hitarea { left: 51.8%; width: 12.8%; }
+.vietnamese-language-hitarea:focus-visible,
+.english-language-hitarea:focus-visible { outline: 3px solid #fff; outline-offset: -3px; }
